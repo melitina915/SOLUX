@@ -25,6 +25,28 @@ app.get('/topic', function(req, res){
     })
 });
 
+app.get('/topic/:id', function(req, res){
+    var id = req.params.id;
+
+    fs.readdir('data', function(err, files){
+        if(err){
+            console.log(err);
+            res.status(500).send('Internal Server Error')
+        }
+
+        //res.render('view', {topics:files});
+    
+        fs.readFile('data/' + id, 'utf8', function(err, data){
+            if(err){
+                console.log(err);
+                res.status(500).send('Internal Server Error')
+            }
+            //res.send(data);
+            res.render('view', {topics:files, title:id, description:data});
+        })
+    })
+});
+
 app.post('/topic', function(req, res){
     var title = req.body.title;
     var description = req.body.description;
