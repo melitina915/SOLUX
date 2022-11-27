@@ -6,6 +6,8 @@ app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
 app.set('view engine', 'ejs');
 
+app.use('/public', express.static('public'));
+
 /*const MongoClient = require('mongodb').MongoClient;
 MongoClient.connect('mongodb+srv://<id>:<password>@<cluster>.<example>.mongodb.net/?retryWrites=true&w=majority', function(error, client){
     app.listen(8080, function(){
@@ -14,7 +16,7 @@ MongoClient.connect('mongodb+srv://<id>:<password>@<cluster>.<example>.mongodb.n
 })*/
 
 var db;
-MongoClient.connect('mongodb+srv://melitina915:peachpotato1119@cluster0.heax8ik.mongodb.net/?retryWrites=true&w=majority', function(error, client){
+MongoClient.connect('mongodb+srv://<id>:<password>@<cluster>.<example>.mongodb.net/?retryWrites=true&w=majority', function(error, client){
     // 연결되면 할 일
     if(error){
         return console.log(error)
@@ -119,6 +121,23 @@ app.delete('/delete', function(req, res){
     req.body._id = parseInt(req.body._id) //문자형 '1'을 정수 1로 변환
     //req.body에 담겨온 게시물 번호를 가진 글을 db에서 찾아서 삭제해주세요
     db.collection('post').deleteOne(req.body, function(error, result){
+        // 터미널 창에 삭제 완료 출력
         console.log('삭제 완료');
+
+        //응답코드 200을 보내고 메시지를 보내주세요
+        res.status(200).send({ message : '성공' });
+        //res.status(400).send({ message : '실패' });
     });
 });
+
+// /detail1로 접속하면 detail1.ejs를 보여준다
+// /detail/2로 접속하면 detail2.ejs를 보여준다
+// /detail/3으로 접속하면 detail3.ejs를 보여준다
+app.get('/detail/:idnum', function(req, res){
+    db.collection('post').findOne({_id : parseInt(req.params.idnum)}, function(error, result){
+        console.log(result);
+        res.render('detail.ejs', { data : result });
+    });
+});
+// 없는 게시물은 어떻게 처리할까
+// 글 목록 페이지 /list에서 글 제목 누르면 상세페이지로 이동시키기
