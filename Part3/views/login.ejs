@@ -17,16 +17,36 @@
       <div class="container mt-4">
         <form action="/login" method="POST">
             <div class ="form-group">
-                <label>할일</label>
+                <label>로그인 아이디</label>
                 <input type="text" class="form-control" name="id">
             </div>
             <div class="form-group">
-                <label>Due date</label>
+                <label>로그인 비번</label>
                 <input type ="text" class="form-control" name="pw">
             </div>
             <button type ="submit" class="btn btn-danger">Submit</button>
         </form>
       </div>
+
+
+
+      <!--/register로 POST 요청
+          서버는 이를 DB에 저장하면 가입기능 끝-->
+      <div class="container mt-4">
+        <form action="/register" method="POST">
+            <div class ="form-group">
+                <label>아이디 생성</label>
+                <input type="text" class="form-control" name="id">
+            </div>
+            <div class="form-group">
+                <label>비번 생성</label>
+                <input type ="text" class="form-control" name="pw">
+            </div>
+            <button type ="submit" class="btn btn-danger">Submit</button>
+        </form>
+      </div>
+
+
 
     <!-- Optional JavaScript; choose one of the two! -->
 
