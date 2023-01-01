@@ -52,7 +52,7 @@
       </nav>-->
       <%- include('nav.html') %>
 
-      
+
       
       <h4 class = "ml-2 my-3 text-center">서버에서 가져온 할 일 리스트</h4>
       
@@ -74,6 +74,14 @@
           // 버튼 누르면 /search로 이동함 (GET 요청함)
           // GET 요청 시 query string으로 정보 전달하기
         })
+
+        // 자바스크립트로 query string(?이름=값&이름=값 ...) 만들 때
+        // 자바스크립트로 query string을 만들 때 아래를 쓰면 쉽다
+        // var 자료 = { 이름 : '값', 이름2 : '값2' }
+        // $.param(자료)
+        // 또는
+        // $(폼태그).serialize()
+
       </script>
 
 
