@@ -1,0 +1,88 @@
+<!doctype html>
+<!--<html lang="en"> language option이 영어라는 뜻-->
+<html>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <link rel = "stylesheet" href = "/public/main.css">
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js" integrity="sha512-YeeA/Qxn5hYdkukScTCNNOhTrv1C2RubAGButJ1rmgQwZf/HdRaCGl+JAVkqsqaNRaYNHdheiuKKuPf9mDcqKg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <div>채팅방</div>
+
+    <input id="input1">
+
+    <div id="content"></div>
+
+    <button id="send">서버에 메세지 보내기</button>
+
+    <button id="room1">채팅방 1 입장</button>
+    <button id="room1-send">채팅방 1에서 메세지 보내기</button>
+
+    <!--유저가 WebSocket에 접속하는 법
+        웹소켓에 접속해 주세요-->
+    <script>
+        var socket = io();
+
+        // 채팅방 1용 메세지 전용버튼
+        // 서버는 room1-send 이름의 메세지를 받으면 room1에만 broadcast가 가능하다
+        $('#room1-send').click(function(){
+            socket.emit('room1-send', '채팅방 1 반갑습니다');
+        });
+
+        // 채팅방1 입장해달라고 서버에 요청
+        $('#room1').click(function(){
+            // socket으로 GET/POST 요청 대체 가능
+            socket.emit('joinroom', '채팅방 입장 요청');
+            // 서버는 joinroom 이름의 메세지를 받으면 채팅방에 넣어주면 된다
+        });
+
+        // 유저가 서버에게 웹소켓으로 실시간 메세지 보내는 법
+        // socket.emit(작명, 메세지)
+        $('#send').click(function(){
+            //socket.emit('user-send', '안녕하세요');
+            socket.emit('user-send', $('#input1').val());
+        });
+
+
+
+        // 서버가 메세지를 보내면
+        socket.on('broadcast', function(data){
+            console.log(data);
+
+            // 서버에서 메세지를 받으면 <div>로 보여주자
+            // <div>를 추가한다
+            $('#content').append('<div>' + data + '</div>');
+        });
+
+
+
+    </script>
+    <!--<script> 태그 안의 코드는 페이지 로드 시 한 번 쭉 실행된다-->
+
+
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+    -->
+  </body>
+</html>
