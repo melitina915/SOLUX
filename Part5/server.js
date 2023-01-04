@@ -1,5 +1,12 @@
 const express = require('express');
 const app = express();
+
+// socket.io 셋팅 방법
+// const app = express(); 밑에만 쓰면 된다
+const http = require('http').createServer(app);
+const {Server} = require('socket.io');
+const io = new Server(http);
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended : true}));
 
@@ -32,10 +39,68 @@ MongoClient.connect('mongodb+srv://melitina915:peachpotato1119@cluster0.heax8ik.
         console.log('저장 완료');
     });*/
 
-    app.listen(8080, function(){
+    //app.listen(8080, function(){
+    // app.listen부분을 http.listen으로 바꿔준다
+    http.listen(8080, function(){
         console.log('listening on 8080')
     });
-})
+});
+
+
+
+// /socket 접속하면 socket.ejs 페이지를 보여주자
+app.get('/socket', function(req, res){
+    res.render('socket.ejs');
+});
+
+// WebSocket 접속 시 서버가 뭔가 실행하고 싶으면
+// 누가 웹소켓에 접속하면 내부 코드를 실행한다
+// socket에는 접속 유저 정보가 들어있다
+io.on('connection', function(socket){
+    console.log('유저 접속');
+
+    console.log(socket.id);
+
+    // room1-send로 메세지를 보내면 room1에만 broadcast 해준다
+    socket.on('room1-send', function(data){
+        // 모든 유저에게 전송된다
+        //io.emit('broadcast', data);
+
+        // room1 들어간 유저에게 전송
+        io.to('room1').emit('broadcast', data);
+    });
+
+    // 서버는 joinroom 이름의 메세지를 받으면 채팅방에 넣어주면 된다
+    // 채팅방 1 입장 누르면 채팅방으로 보내준다
+    socket.on('joinroom', function(data){
+        // 채팅방 만들고 입장은 socket.join(방 이름)
+        socket.join('room1');
+    });
+
+    // 서버가 수신하려면
+    // socket.on(작명, 콜백함수)
+    // 누가 'user-send' 이름으로 메세지를 보내면 내부 코드 실행
+    // data는 유저가 보낸 메세지
+    // 유저가 메세지를 보내면
+    socket.on('user-send', function(data){
+        console.log(data);
+
+        // 서버 --> 유저 메세지 전송은 io.emit()
+        // io.emit( )은 모든 유저에게 메세지 보내준다
+        // io.emit('broadcast', '반가워');
+
+        // 모든 사람에게 보내준다
+        io.emit('broadcast', data);
+        // 메세지 수신은 언제나 socket.on()
+
+        // 서버-유저 1명 간 단독으로 소통하고 싶다면
+        //io.to(socket.id).emit('broadcast', data);
+
+    });
+
+});
+
+
 
 /*app.listen(8080, function(){
     console.log('listening on 8080')
@@ -221,7 +286,77 @@ app.get('/chat', checklogin, function(req, res){
 
     });
 
-    
+});
+
+app.post('/message', checklogin, function(req, res){
+
+    var tosave = {
+        parent : req.body.parent, // parent, content는 프론트엔드에서 post 요청으로 보낸다
+        content : req.body.content, 
+        userid : req.user._id, // 메세지 발행한 유저 _id
+        date : new Date(),
+    }
+
+    db.collection('message').insertOne(tosave).then(() => {
+        console.log('DB 저장 성공');
+        res.send('DB 저장 성공');
+    });//.catch(() => {
+        //console.log('DB 저장 실패');
+    //});
+});
+
+
+
+// 서버와 유저간 실시간 소통채널 열기
+// 이제 /어쩌구로 GET 요청하면 실시간 채널이 오픈된다
+// GET, POST는 HTTP 요청이라고도 부른다
+app.get('/message/:id', checklogin, function(req, res){
+    // 일반 GET, POST 요청은 1회 요청 시 1회 응답만 가능하다
+    // 하지만 이렇게 하면 여러 번 응답 가능하다
+    res.writeHead(200, {
+        "Connection": "keep-alive",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+    });
+
+    // 채팅방을 누르면 _id가 req.params.id에 넣어진다
+    // 서버에서 실시간 전송 시 문자 자료만 전송 가능
+    db.collection('message').find({ parent : req.params.id }).toArray()
+    .then((result) => {
+        // 유저에게 데이터 전송은
+        res.write('event: test\n'); // event: 보낼 데이터 이름 \n
+        // object, array에 따옴표치면 -> JSON이다
+        // JSON은 문자 취급 받기 때문이다
+        res.write('data: ' + JSON.stringify(result) + '\n\n'); // data: 보낼 데이터 \n\n
+    });
+
+
+
+    // Change Stream 설정법
+
+    // 컬렉션 안의 원하는 document만 감시하고 싶으면
+    const pipeline = [
+        // parent 게시물이 req.params.id인 document만 감시하려면
+        { $match: { 'fullDocument.parent' : req.params.id } } // fullDocument를 필수로 붙여야 한다
+    ];
+    const collection = db.collection('message');
+    // .watch() 붙이면 실시간 감시 가능
+    const changeStream = collection.watch(pipeline);
+    // 해당 컬렉션에 변동이 생기면(document가 추가/수정/삭제되면)
+    // 아래 코드가 실행된다
+    changeStream.on('change', (result) => {
+        // 추가된 document를 출력해보려면 result.fullDocument
+        //console.log(result.fullDocument);
+
+        res.write('event: test\n');
+
+        // 서버에서 document 다 찾아서 보낼 때 [ { } , { } , { } ... ]
+        // 이런 모양이었으므로 형식 통일
+        res.write('data: ' + JSON.stringify([result.fullDocument]) + '\n\n');
+    });
+
+
+
 });
 
 
