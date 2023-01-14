@@ -18,7 +18,7 @@ MongoClient.connect('mongodb+srv://<id>:<password>@<cluster>.<example>.mongodb.n
 })*/
 
 var db;
-MongoClient.connect('mongodb+srv://melitina915:peachpotato1119@cluster0.heax8ik.mongodb.net/?retryWrites=true&w=majority', function(error, client){
+MongoClient.connect('mongodb+srv:///<id>:<password>@<cluster>.<example>.mongodb.net/?retryWrites=true&w=majority', function(error, client){
     // 연결되면 할 일
     if(error){
         return console.log(error)
